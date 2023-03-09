@@ -9,7 +9,6 @@ import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 import { register } from "./controllers/auth.js";
-import User from "./Models/User.js";
 
 // CONFIGURATIONS
 const __filename = fileURLToPath(import.meta.url);
@@ -38,41 +37,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 //Routes
-app.post("/auth/register", async (req, res) => {
-  try {
-    const {
-      firstName,
-      //   lastName,
-      //   email,
-      password,
-      //   picturePath,
-      //   friends,
-      //   location,
-      //   occupation,
-    } = req.body;
-
-    const salt = await bcrypt.genSalt();
-    const HashedPassword = await bcrypt.hash(password, salt);
-
-    const newUser = new User({
-      firstName,
-      //   lastName,
-      //   email,
-      password: HashedPassword,
-      //   picturePath,
-      //   friends,
-      //   location,
-      //   occupation,
-      impressions: Math.floor(Math.random * 1000),
-      viewedProfile: Math.floor(Math.random * 1000),
-    });
-
-    const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+app.post("/auth/register", upload.single("picture"), register);
 
 //MONGOOSE SETUP
 const PORT = process.env.PORT || 6001;
@@ -82,6 +47,6 @@ await mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    app.listen(() => console.log(`Server listening on ${PORT}`));
+    app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
   })
   .catch((error) => console.log(`${error} did not connect`));
